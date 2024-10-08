@@ -147,16 +147,16 @@
     const latencyHostCondition = filteredHostsArray.map(host => `Computer has "${host}"`).join(' or ');
     query = `
         Heartbeat
-        | where TimeGenerated > ago(48h)  // Filter records to include only those from the last 48 hours
-        | where ${latencyHostCondition}  // Further filter records to include only those from the specified computers
-        | extend E2EIngestionLatency = ingestion_time() - TimeGenerated  // Calculate end-to-end ingestion latency (time from when the record was generated to when it was ingested)
-        | extend AgentLatency = ingestion_time() - TimeGenerated  // Calculate agent latency (same as E2EIngestionLatency, potentially redundant)
-        | extend AgentLatencyMin = todouble(datetime_diff("Second", ingestion_time(), TimeGenerated)) / 60  // Convert latency from seconds to minutes
-        | extend AgentLatencyHMS = format_timespan(AgentLatency, 'h:m:s')  // Format latency into a human-readable hours:minutes:seconds format
+        | where TimeGenerated > ago(48h)
+        | where ${latencyHostCondition}
+        | extend E2EIngestionLatency = ingestion_time() - TimeGenerated
+        | extend AgentLatency = ingestion_time() - TimeGenerated
+        | extend AgentLatencyMin = todouble(datetime_diff("Second", ingestion_time(), TimeGenerated)) / 60
+        | extend AgentLatencyHMS = format_timespan(AgentLatency, 'h:m:s')
         | summarize 
-            percentiles(E2EIngestionLatency, 50, 95),  // Compute 50th (median) and 95th percentiles for E2EIngestionLatency
-            percentiles(AgentLatency, 50, 95)  // Compute 50th (median) and 95th percentiles for AgentLatency (same as E2EIngestionLatency)
-            by bin(TimeGenerated, 30m), Computer, AgentLatencyHMS  // Group results by 30-minute time bins, Computer, and AgentLatencyHMS
+            percentiles(E2EIngestionLatency, 50, 95),
+            percentiles(AgentLatency, 50, 95)
+            by bin(TimeGenerated, 30m), Computer, AgentLatencyHMS
     `;}
 
              // Display the KQL output
